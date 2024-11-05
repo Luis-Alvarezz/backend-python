@@ -1,21 +1,38 @@
 from flask import jsonify, request
-from services.empleado_service import empleadoService
+from services.empleadoService import EmpleadoService
 
 class EmpleadoController:
-  @staticmethod # Para que NO cambie ningun parámetro
-  def get_all():
-    empleados = empleadoService.get_all()
-    return jsonify(empleados) # Retornamos el Objeto en formato JSON
+  def __init__(self):
+    self.service = EmpleadoService()
+    
+  # @staticmethod # Para que NO cambie ningun parámetro
+  def get_all(self):
+    empleados = self.service.get_all()
+    return jsonify([empleado.to_dict() for empleado in empleados]) # Retornamos el Arreglo en formato JSON
   
-  @staticmethod
-  def get_by_id(empleado_id):
-    empleado_id = empleadoService.get_by_id(empleado_id_id)
-    return jsonify(empleado_id)
+  # @staticmethod
+  def get_by_id(self, id):
+    user_id = self.service.get_by_id(id)
+    return jsonify(user_id.to_dict()) if user_id else ('Empleado no encontrado', 404)
   
-  @staticmethod
-  def create_empleado():
+  
+  def get_by_user(self, username):
+    empleado = self.service.get_by_user(username)
+    return jsonify(empleado.to_dict()) if empleado else ('Empleado no encontrado en Controlador', 404)
+  
+  # @staticmethod
+  def create_empleado(self):
     data = request.get_json()
-    response = empleadoService.create_empleado(data)
-    return jsonify(response)
+    try:
+      user_id = self.service.create_empleado(data)
+      return jsonify({ 'id': user_id }), 201
+    except ValueError as e: return jsonify({ 'error': str(e) }), 400
   
-  # Borrar, Actualizar, y lo que falte del CRUD ====================
+  def update_empleado(self, id):
+    data = request.get_json()
+    self.service.update_empleado(id, data)
+    return jsonify({ 'message': 'Empleado Actualizado' }), 200
+  
+  def delete_empleado(self, id):
+    self.service.delete_user(id)
+    return jsonify({ 'message': 'Empleado Borrado' }), 200
